@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aircraft Materials Environmental Impact Simulation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .panel {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex: 1;
+            min-width: 300px;
+        }
+        .full-width {
+            flex: 100%;
+        }
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .results-table th, .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .results-table th {
+            background-color: #f2f2f2;
+        }
+        .comparison-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .comparison-label {
+            width: 150px;
+            font-weight: bold;
+        }
+        .bar-container {
+            flex-grow: 1;
+            background-color: #e0e0e0;
+            height: 20px;
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        .bar-value {
+            margin-left: 10px;
+            min-width: 80px;
+            text-align: right;
+        }
+        .cf-color {
+            color: #1565C0;
+        }
+        .tp-color {
+            color: #7B1FA2;
+        }
+        .summary {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .material-properties {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .property-column {
+            flex: 1;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .header-cf {
+            background-color: #1565C0;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .header-tp {
+            background-color: #7B1FA2;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aircraft Materials Environmental Impact Simulation</h1>
+    <p>This interactive simulation compares the environmental impact of carbon fiber composites versus thermoplastic materials in aircraft applications across different lifecycle phases.</p>
+    
+    <div class="container">
+        <!-- Aircraft Parameters Panel -->
+        <div class="panel">
+            <h2>Aircraft Parameters</h2>
+            <div class="slider-container">
+                <label for="flight-hours">Annual Flight Hours: <span id="flight-hours-value">3000</span></label>
+                <input type="range" id="flight-hours" min="1000" max="6000" step="100" value="3000">
+            </div>
+            
+            <div class="slider-container">
+                <label for="fuel-consumption">Fuel Consumption (kg/hour): <span id="fuel-consumption-value">5000</span></label>
+                <input type="range" id="fuel-consumption" min="2000" max="10000" step="100" value="5000">
+            </div>
+            
+            <div class="slider-container">
+                <label for="material-weight">Material Weight (kg): <span id="material-weight-value">5000</span></label>
+                <input type="range" id="material-weight" min="1000" max="10000" step="500" value="5000">
+            </div>
+            
+            <div class="slider-container">
+                <label for="lifespan">Aircraft Expected Lifespan (years): <span id="lifespan-value">20</span></label>
+                <input type="range" id="lifespan" min="10" max="40" step="1" value="20">
+            </div>
+        </div>
+        
+        <!-- Material Properties Panel -->
+        <div class="panel">
+            <h2>Material Properties Comparison</h2>
+            <div class="material-properties">
+                <div class="property-column">
+                    <div class="header-cf">Carbon Fiber Composites</div>
+                    <p><strong>Production Energy:</strong> <span id="cf-energy">1,500,000</span> MJ</p>
+                    <p><strong>Recyclability:</strong> <span id="cf-recyclability">30%</span></p>
+                    <p><strong>Toxicity Score:</strong> <span id="cf-toxicity">7/10</span></p>
+                    <p><strong>Material Lifespan:</strong> <span id="cf-lifespan">25 years</span></p>
+                </div>
+                <div class="property-column">
+                    <div class="header-tp">Thermoplastic Composites</div>
+                    <p><strong>Production Energy:</strong> <span id="tp-energy">600,000</span> MJ</p>
+                    <p><strong>Recyclability:</strong> <span id="tp-recyclability">80%</span></p>
+                    <p><strong>Toxicity Score:</strong> <span id="tp-toxicity">4/10</span></p>
+                    <p><strong>Material Lifespan:</strong> <span id="tp-lifespan">20 years</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Panel -->
+        <div class="panel full-width">
+            <h2>Environmental Impact Comparison</h2>
+            
+            <h3>CO₂ Emissions by Lifecycle Phase (kg CO₂e)</h3>
+            
+            <div class="comparison-row">
+                <div class="comparison-label">Production Phase</div>
+                <div class="bar-container">
+                    <div id="cf-production-bar" class="bar" style="background-color: #1565C0;"></div>
+                </div>
+                <div class="bar-value cf-color">CF: <span id="cf-production">125,000</span></div>
+                <div class="bar-container">
+                    <div id="tp-production-bar" class="bar" style="background-color: #7B1FA2;"></div>
+                </div>
+                <div class="bar-value tp-color">TP: <span id="tp-production">65,000</span></div>
+            </div>
+            
+            <div class="comparison-row">
+                <div class="comparison-label">Operational Phase</div>
+                <div class="bar-container">
+                    <div id="cf-operational-bar" class="bar" style="background-color: #1565C0;"></div>
+                </div>
+                <div class="bar-value cf-color">CF: <span id="cf-operational">1,200,000</span></div>
+                <div class="bar-container">
+                    <div id="tp-operational-bar" class="bar" style="background-color: #7B1FA2;"></div>
+                </div>
+                <div class="bar-value tp-color">TP: <span id="tp-operational">1,400,000</span></div>
+            </div>
+            
+            <div class="comparison-row">
+                <div class="comparison-label">End of Life</div>
+                <div class="bar-container">
+                    <div id="cf-end-of-life-bar" class="bar" style="background-color: #1565C0;"></div>
+                </div>
+                <div class="bar-value cf-color">CF: <span id="cf-end-of-life">-26,250</span></div>
+                <div class="bar-container">
+                    <div id="tp-end-of-life-bar" class="bar" style="background-color: #7B1FA2;"></div>
+                </div>
+                <div class="bar-value tp-color">TP: <span id="tp-end-of-life">-36,400</span></div>
+            </div>
+            
+            <div class="comparison-row">
+                <div class="comparison-label"><strong>Total Impact</strong></div>
+                <div class="bar-container">
+                    <div id="cf-total-bar" class="bar" style="background-color: #1565C0;"></div>
+                </div>
+                <div class="bar-value cf-color">CF: <span id="cf-total">1,298,750</span></div>
+                <div class="bar-container">
+                    <div id="tp-total-bar" class="bar" style="background-color: #7B1FA2;"></div>
+                </div>
+                <div class="bar-value tp-color">TP: <span id="tp-total">1,428,600</span></div>
+            </div>
+            
+            <h3>Annual Average Impact</h3>
+            <p class="cf-color">Carbon Fiber: <span id="cf-annual">51,950</span> kg CO₂e/year</p>
+            <p class="tp-color">Thermoplastic: <span id="tp-annual">71,430</span> kg CO₂e/year</p>
+            
+            <div class="summary" id="impact-summary">
+                Carbon Fiber Composites has 9.1% lower overall environmental impact based on current parameters.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Aircraft Materials Environmental Impact Simulation
+        // This simulation compares carbon fiber composites vs thermoplastic materials
+
+        // Environmental impact factors for both materials
+        // These values are simplified for educational purposes
+        const materials = {
+          carbonFiber: {
+            name: "Carbon Fiber Composites",
+            productionEnergy: 300, // MJ/kg
+            productionEmissions: 25, // kg CO2e/kg
+            recyclability: 30, // percentage
+            toxicityScore: 7, // scale of 1-10
+            lifespan: 25, // years
+            weight: 1, // relative weight (reference)
+            fuelSavings: 25 // percentage compared to traditional materials
+          },
+          thermoplastic: {
+            name: "Thermoplastic Composites",
+            productionEnergy: 120, // MJ/kg
+            productionEmissions: 13, // kg CO2e/kg
+            recyclability: 80, // percentage
+            toxicityScore: 4, // scale of 1-10
+            lifespan: 20, // years
+            weight: 1.4, // relative weight compared to carbon fiber
+            fuelSavings: 15 // percentage compared to traditional materials
+          }
+        };
+
+        // Aircraft operational parameters (defaults)
+        let aircraftParams = {
+          flightHours: 3000, // hours per year
+          fuelConsumption: 5000, // kg per hour
+          materialWeight: 5000, // kg of material used
+          expectedLifespan: 20, // years
+          co2PerFuel: 3.16 // kg CO2 per kg fuel
+        };
+
+        // DOM elements mapping
+        let elements = {};
+
+        // Calculate lifecycle emissions (production + use - end of life benefits)
+        function calculateLifecycleImpact(material, params) {
+          // Production phase
+          const productionEmissions = material.productionEmissions * params.materialWeight;
+          const productionEnergy = material.productionEnergy * params.materialWeight;
+          
+          // Use phase (weight affects fuel consumption)
+          const weightFactor = material.weight;
+          const adjustedFuelConsumption = params.fuelConsumption * weightFactor;
+          const fuelSavings = adjustedFuelConsumption * (material.fuelSavings / 100);
+          const actualFuelConsumption = adjustedFuelConsumption - fuelSavings;
+          const annualFuelUse = actualFuelConsumption * params.flightHours;
+          const annualOperationalEmissions = annualFuelUse * params.co2PerFuel;
+          const lifetimeOperationalEmissions = annualOperationalEmissions * Math.min(material.lifespan, params.expectedLifespan);
+          
+          // End of life
+          const recyclingBenefit = -(productionEmissions * (material.recyclability / 100) * 0.7);
+          
+          // Total lifecycle
+          const totalEmissions = productionEmissions + lifetimeOperationalEmissions + recyclingBenefit;
+          const emissionsPerYear = totalEmissions / Math.min(material.lifespan, params.expectedLifespan);
+          
+          return {
+            production: productionEmissions,
+            operational: lifetimeOperationalEmissions,
+            endOfLife: recyclingBenefit,
+            total: totalEmissions,
+            annualAverage: emissionsPerYear,
+            energyUsed: productionEnergy,
+            recyclability: material.recyclability,
+            toxicity: material.toxicityScore,
+            lifespan: material.lifespan
+          };
+        }
+
+        // Update the comparison bar chart
+        function updateChart(cfData, tpData) {
+          // Get normalized values for the chart (percentage of maximum)
+          const maxProduction = Math.max(cfData.production, tpData.production);
+          const maxOperational = Math.max(cfData.operational, tpData.operational);
+          const minEndOfLife = Math.min(cfData.endOfLife, tpData.endOfLife);
+          const maxTotal = Math.max(cfData.total, tpData.total);
+          
+          // Set the bar widths as percentages
+          elements.cfProductionBar.style.width = ((cfData.production / maxProduction) * 100) + '%';
+          elements.tpProductionBar.style.width = ((tpData.production / maxProduction) * 100) + '%';
+          
+          elements.cfOperationalBar.style.width = ((cfData.operational / maxOperational) * 100) + '%';
+          elements.tpOperationalBar.style.width = ((tpData.operational / maxOperational) * 100) + '%';
+          
+          // For end of life (negative values, represent benefits)
+          const eolRangeFactor = Math.abs(minEndOfLife) > 0 ? 100 / Math.abs(minEndOfLife) : 0;
+          elements.cfEndOfLifeBar.style.width = (Math.abs(cfData.endOfLife) * eolRangeFactor) + '%';
+          elements.tpEndOfLifeBar.style.width = (Math.abs(tpData.endOfLife) * eolRangeFactor) + '%';
+          
+          elements.cfTotalBar.style.width = ((cfData.total / maxTotal) * 100) + '%';
+          elements.tpTotalBar.style.width = ((tpData.total / maxTotal) * 100) + '%';
+          
+          // Color the bars based on which is better
+          elements.cfProductionBar.style.backgroundColor = cfData.production <= tpData.production ? '#4CAF50' : '#f44336';
+          elements.tpProductionBar.style.backgroundColor = tpData.production <= cfData.production ? '#4CAF50' : '#f44336';
+          
+          elements.cfOperationalBar.style.backgroundColor = cfData.operational <= tpData.operational ? '#4CAF50' : '#f44336';
+          elements.tpOperationalBar.style.backgroundColor = tpData.operational <= cfData.operational ? '#4CAF50' : '#f44336';
+          
+          elements.cfEndOfLifeBar.style.backgroundColor = cfData.endOfLife <= tpData.endOfLife ? '#4CAF50' : '#f44336';
+          elements.tpEndOfLifeBar.style.backgroundColor = tpData.endOfLife <= cfData.endOfLife ? '#4CAF50' : '#f44336';
+          
+          elements.cfTotalBar.style.backgroundColor = cfData.total <= tpData.total ? '#4CAF50' : '#f44336';
+          elements.tpTotalBar.style.backgroundColor = tpData.total <= cfData.total ? '#4CAF50' : '#f44336';
+        }
+
+        // Update the simulation results based on current parameters
+        function updateSimulation() {
+          const carbonFiberImpact = calculateLifecycleImpact(materials.carbonFiber, aircraftParams);
+          const thermoplasticImpact = calculateLifecycleImpact(materials.thermoplastic, aircraftParams);
+          
+          // Update the DOM with results
+          elements.cfProduction.textContent = Math.round(carbonFiberImpact.production).toLocaleString();
+          elements.cfOperational.textContent = Math.round(carbonFiberImpact.operational).toLocaleString();
+          elements.cfEndOfLife.textContent = Math.round(carbonFiberImpact.endOfLife).toLocaleString();
+          elements.cfTotal.textContent = Math.round(carbonFiberImpact.total).toLocaleString();
+          elements.cfAnnual.textContent = Math.round(carbonFiberImpact.annualAverage).toLocaleString();
+          
+          elements.tpProduction.textContent = Math.round(thermoplasticImpact.production).toLocaleString();
+          elements.tpOperational.textContent = Math.round(thermoplasticImpact.operational).toLocaleString();
+          elements.tpEndOfLife.textContent = Math.round(thermoplasticImpact.endOfLife).toLocaleString();
+          elements.tpTotal.textContent = Math.round(thermoplasticImpact.total).toLocaleString();
+          elements.tpAnnual.textContent = Math.round(thermoplasticImpact.annualAverage).toLocaleString();
+          
+          // Update material properties info
+          elements.cfEnergy.textContent = Math.round(carbonFiberImpact.energyUsed).toLocaleString();
+          elements.cfRecyclability.textContent = materials.carbonFiber.recyclability + '%';
+          elements.cfToxicity.textContent = materials.carbonFiber.toxicityScore + '/10';
+          elements.cfLifespan.textContent = materials.carbonFiber.lifespan + ' years';
+          
+          elements.tpEnergy.textContent = Math.round(thermoplasticImpact.energyUsed).toLocaleString();
+          elements.tpRecyclability.textContent = materials.thermoplastic.recyclability + '%';
+          elements.tpToxicity.textContent = materials.thermoplastic.toxicityScore + '/10';
+          elements.tpLifespan.textContent = materials.thermoplastic.lifespan + ' years';
+          
+          // Update the comparison bar chart
+          updateChart(carbonFiberImpact, thermoplasticImpact);
+          
+          // Highlight which is better overall
+          const betterMaterial = carbonFiberImpact.total < thermoplasticImpact.total ? 
+            'Carbon Fiber Composites' : 'Thermoplastic Composites';
+          const percentBetter = Math.abs(
+            ((carbonFiberImpact.total - thermoplasticImpact.total) / 
+            Math.max(carbonFiberImpact.total, thermoplasticImpact.total)) * 100
+          ).toFixed(1);
+          
+          elements.summary.textContent = `${betterMaterial} has ${percentBetter}% lower overall environmental impact based on current parameters.`;
+        }
+
+        // Update parameters based on slider input
+        function updateParameters() {
+          aircraftParams.flightHours = parseInt(elements.flightHoursInput.value);
+          elements.flightHoursValue.textContent = aircraftParams.flightHours.toLocaleString();
+          
+          aircraftParams.fuelConsumption = parseInt(elements.fuelConsumptionInput.value);
+          elements.fuelConsumptionValue.textContent = aircraftParams.fuelConsumption.toLocaleString();
+          
+          aircraftParams.materialWeight = parseInt(elements.materialWeightInput.value);
+          elements.materialWeightValue.textContent = aircraftParams.materialWeight.toLocaleString();
+          
+          aircraftParams.expectedLifespan = parseInt(elements.lifespanInput.value);
+          elements.lifespanValue.textContent = aircraftParams.expectedLifespan;
+          
+          updateSimulation();
+        }
+
+        // Initialize when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+          // Map all DOM elements
+          elements = {
+            // Input sliders and their value displays
+            flightHoursInput: document.getElementById('flight-hours'),
+            flightHoursValue: document.getElementById('flight-hours-value'),
+            fuelConsumptionInput: document.getElementById('fuel-consumption'),
+            fuelConsumptionValue: document.getElementById('fuel-consumption-value'),
+            materialWeightInput: document.getElementById('material-weight'),
+            materialWeightValue: document.getElementById('material-weight-value'),
+            lifespanInput: document.getElementById('lifespan'),
+            lifespanValue: document.getElementById('lifespan-value'),
+            
+            // Carbon fiber output elements
+            cfProduction: document.getElementById('cf-production'),
+            cfOperational: document.getElementById('cf-operational'),
+            cfEndOfLife: document.getElementById('cf-end-of-life'),
+            cfTotal: document.getElementById('cf-total'),
+            cfAnnual: document.getElementById('cf-annual'),
+            cfEnergy: document.getElementById('cf-energy'),
+            cfRecyclability: document.getElementById('cf-recyclability'),
+            cfToxicity: document.getElementById('cf-toxicity'),
+            cfLifespan: document.getElementById('cf-lifespan'),
+            
+            // Thermoplastic output elements
+            tpProduction: document.getElementById('tp-production'),
+            tpOperational: document.getElementById('tp-operational'),
+            tpEndOfLife: document.getElementById('tp-end-of-life'),
+            tpTotal: document.getElementById('tp-total'),
+            tpAnnual: document.getElementById('tp-annual'),
+            tpEnergy: document.getElementById('tp-energy'),
+            tpRecyclability: document.getElementById('tp-recyclability'),
+            tpToxicity: document.getElementById('tp-toxicity'),
+            tpLifespan: document.getElementById('tp-lifespan'),
+            
+            // Chart bars
+            cfProductionBar: document.getElementById('cf-production-bar'),
+            tpProductionBar: document.getElementById('tp-production-bar'),
+            cfOperationalBar: document.getElementById('cf-operational-bar'),
+            tpOperationalBar: document.getElementById('tp-operational-bar'),
+            cfEndOfLifeBar: document.getElementById('cf-end-of-life-bar'),
+            tpEndOfLifeBar: document.getElementById('tp-end-of-life-bar'),
+            cfTotalBar: document.getElementById('cf-total-bar'),
+            tpTotalBar: document.getElementById('tp-total-bar'),
+            
+            // Summary text
+            summary: document.getElementById('impact-summary')
+          };
+          
+          // Add event listeners
+          elements.flightHoursInput.addEventListener('input', updateParameters);
+          elements.fuelConsumptionInput.addEventListener('input', updateParameters);
+          elements.materialWeightInput.addEventListener('input', updateParameters);
+          elements.lifespanInput.addEventListener('input', updateParameters);
+          
+          // Initialize the simulation
+          updateParameters();
+        });
+    </script>
+</body>
+</html>
